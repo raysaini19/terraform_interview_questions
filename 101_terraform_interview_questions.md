@@ -30,51 +30,51 @@
 ##
 #### 2. There are 5 people in your team that use Terraform. Some time in the last few days, a resource in AWS changed. How can you find out who did this?
 
-######   Answer: If it was done via Console, Cloudtrail can tell you. If it was done via Terraform code, git repo AND AWS Cloudtrail can tell you.
+   Answer: If it was done via Console, Cloudtrail can tell you. If it was done via Terraform code, git repo AND AWS Cloudtrail can tell you.
 
 
 ##
 #### 3. You made a module. One Terraform code uses that module. But, now, you improved that module, but the "caller" code is not compatible with the new version of the module.  How can you have both versions of the module in use?
 
-######   Answer: You can have verions on your modules and the caller code can refer to specific version of the module.
+   Answer: You can have verions on your modules and the caller code can refer to specific version of the module.
 
 
 ##
 #### 4. You have existing infrastructure in AWS that was NOT made by Terraform. How can you bring that infrastructure in Terraform code's control?
 
-######   Answer: If you all want is the "state" to be in Terraform, you can use "terraform import" commnad.
-######           If you also want terraform code be made, you can either do yourself (until code and state match exactly), or you can use a opensource tool named "Terraformer"
+   Answer: If you all want is the "state" to be in Terraform, you can use "terraform import" commnad.
+           If you also want terraform code be made, you can either do yourself (until code and state match exactly), or you can use a opensource tool named "Terraformer"
 
 ##
 #### 5. If N people are using Terraform, How can we make sure people don't bring up resources in AWS/GCP that are too expensive?
 
-######   Answer: There is proprietory tool call called Scalr. Or, you can use Terraform Enterprise. There may also be a way using Open Policy Agent. Cloud providers often provide tools for this, as well.
+   Answer: There is proprietory tool call called Scalr. Or, you can use Terraform Enterprise. There may also be a way using Open Policy Agent. Cloud providers often provide tools for this, as well.
 
 ##
 #### 6. How can you tackle secrets in Terraform?
 
-######   Answer: Starting version 0.14, you can mark your variables "sensitive". This allows logs of these variables to be masked.  You can also integrate Vault with Terraform.
+   Answer: Starting version 0.14, you can mark your variables "sensitive". This allows logs of these variables to be masked.  You can also integrate Vault with Terraform.
 
 
 
 ##
 #### 7. What is the big deal about Terraform v0.13 and above?
 
-######   Answer: Before version 0.13, programming logic was nearly impossible to implement in HCL. With 0.13, it is still not super easy, but a huge progress was made.  There were many other major features released as well (e.g. json output)
+   Answer: Before version 0.13, programming logic was nearly impossible to implement in HCL. With 0.13, it is still not super easy, but a huge progress was made.  There were many other major features released as well (e.g. json output)
 
 
 
 ##
 #### 8. You have 2 folders of terraform code. Folder A and Folder B. Folder B needs to use output (state) from folder A to create resources. How can you accomplish this?
 
-######   Answer: This has been long-standing problem with Terraform. Terragrunt is one way to get this done. Others have implement custom Python scripts that copies states back and forthe between folders.
+   Answer: This has been long-standing problem with Terraform. Terragrunt is one way to get this done. Others have implement custom Python scripts that copies states back and forthe between folders.
 
 
 
 ##
 #### 9. Why would you need "data" resources in Terraform?
 
-######   Answer: To refer to resources that already exists  in AWS. For example, list of AMIs in a region.
+   Answer: To refer to resources that already exists  in AWS. For example, list of AMIs in a region.
 
 
 
@@ -82,14 +82,14 @@
 ##
 #### 10. Is it safe to store terraform state in a private git repo? Why or why not?
 
-######   Answer: It is NOT safe to store in git repos, because it can hold secrets. Also, it is likely that people will override each other's changes in state.
+   Answer: It is NOT safe to store in git repos, because it can hold secrets. Also, it is likely that people will override each other's changes in state.
 
 
 
 ##
 #### 11. If you are tagged to implement Terraform in a team or company where they have never used Terraform, what issues might you solve pre-emptively?
 
-######   Answers: Set standars and best practices before you start coding. Also, you many want to import existing resources in Terraform before you start.
+   Answers: Set standars and best practices before you start coding. Also, you many want to import existing resources in Terraform before you start.
 
 
 
@@ -97,7 +97,7 @@
 ##
 #### 12. You are going to deploy similar resources in Development, Staging and Prod environments. How can you code so that you can deploy to similar Terraform code with repeating your code.
 
-######   Answer: Hav eno hard-coded variables and use .tfvars file per environment.
+   Answer: Hav eno hard-coded variables and use .tfvars file per environment.
 
 
 
@@ -718,4 +718,3 @@
                                                Mamun Rashid
 
                                    https://www.linkedin.com/in/mamunrashid/
-
