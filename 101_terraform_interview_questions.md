@@ -37,7 +37,7 @@
 #### 3. You made a module. One Terraform code uses that module. But, now, you improved that module, but the "caller" code is not compatible with the new version of the module.  How can you have both versions of the module in use?
 
    Answer: You can have verions on your modules and the caller code can refer to specific version of the module.
-
+```
 module "example" {
   source = "git://github.com/user/example-module.git?ref=v2.0.0"
 }
@@ -45,7 +45,7 @@ module "example" {
 module "example" {
   source = "git://github.com/user/example-module.git?ref=v1.0.0"
 }
-
+```
 
 
 
@@ -97,6 +97,7 @@ module "example" {
 
    Answer: You can use the Terraform Remote State Data Source to reference the state data from Folder A in Folder B and use the output values as input variables for the resources you want to create.
    1.  In Folder A, configure the backend to store the state in a remote location, such as an S3 bucket by adding 'backend' block.
+   ```
     terraform {
       backend "s3" {
         bucket = "your-bucket-name"
@@ -104,7 +105,9 @@ module "example" {
         region = "your-region"
       }
     }
+    ```
    2. In Folder B, create a data source that references the state data from Folder A. You can do this by adding a data block in your main.tf file
+   ```
     data "terraform_remote_state" "folder_a" {
         backend = "s3"
         config = {
@@ -113,16 +116,17 @@ module "example" {
             region = "your-region"
         }
     }
+    ```
     3. In Folder B, use the output values from Folder A as input variables for the resources you want to create. You can do this by using the data block you created in step 2 and referencing the output values with the syntax data.
      terraform_remote_state.folder_a.outputs.<output_name>:
-
+```
     resource "aws_instance" "example" {
         ami           = "your-ami-id"
         instance_type = "t2.micro"
         subnet_id     = "${data.terraform_remote_state.folder_a.outputs.subnet_id}"
         vpc_id        = "${data.terraform_remote_state.folder_a.outputs.vpc_id}"
     }
-
+```
 
 
 
@@ -165,7 +169,7 @@ module "example" {
    3. Output the resources: Define output variables for the module, which can be used to reference the resources in other Terraform configurations. For example, you might output the resource IDs or IP addresses of the resources.
    4. Use the module in your Terraform configurations: In each of your environment-specific Terraform configurations, use the module block to call the module and pass in the appropriate input variables. This will create the resources with the desired configuration for that environment.
 
-
+```
 ---
 variable "environment" {
   type = string
@@ -195,7 +199,7 @@ module "example" {
 }
 
 ---
-
+```
 
 
 ##
@@ -203,7 +207,7 @@ module "example" {
 
    Answer: In the same folder where I have terraform files, I would have .gitlabci.yml file which will have various stages (e.g. tfsec, tflint, checkov, terraform validate, 
              terrform plan and terarform apply and possibly some testing stages).
-
+```
 ---
 pipeline {
   agent any
@@ -303,7 +307,7 @@ pipeline {
 }
 
 ---
-
+```
 ##
 #### 14. Tell me about a project or task that you did in Terraform?
 
