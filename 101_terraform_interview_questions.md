@@ -38,11 +38,24 @@
 
    Answer: You can have verions on your modules and the caller code can refer to specific version of the module.
 
+module "example" {
+  source = "git://github.com/user/example-module.git?ref=v2.0.0"
+}
+
+module "example" {
+  source = "git://github.com/user/example-module.git?ref=v1.0.0"
+}
+
+
+
 
 ##
 #### 4. You have existing infrastructure in AWS that was NOT made by Terraform. How can you bring that infrastructure in Terraform code's control?
 
    Answer: If you all want is the "state" to be in Terraform, you can use "terraform import" commnad.
+            #terraform import aws_instance.my_instance i-0123456789abcdef0
+
+
            If you also want terraform code be made, you can either do yourself (until code and state match exactly), or you can use a opensource tool named "Terraformer"
 
 ##
@@ -50,10 +63,20 @@
 
    Answer: There is proprietory tool call called Scalr. Or, you can use Terraform Enterprise. There may also be a way using Open Policy Agent. Cloud providers often provide tools for this, as well.
 
+   1. Set up strict policies for resource creation
+   2. Use Terraform's validation and planning features
+   3. Use Terraform modules and templates
+   4. Monitor and audit resource usage
+
 ##
 #### 6. How can you tackle secrets in Terraform?
 
    Answer: Starting version 0.14, you can mark your variables "sensitive". This allows logs of these variables to be masked.  You can also integrate Vault with Terraform.
+   1. Environment variables: You can store sensitive data such as passwords, API keys, and other secrets as environment variables on your local machine or CI/CD pipeline. Terraform can access these environment variables through the var.<variable_name> syntax.
+   2. Terraform Vault provider: You can use the Terraform Vault provider to securely manage and store secrets in HashiCorp Vault. The provider can retrieve secrets from Vault and pass them as input variables to Terraform resources.
+   3. Sensitive data sources: Terraform has several built-in sensitive data sources such as aws_secretsmanager_secret_version and google_secret_manager_secret_version that allow you to retrieve secrets from AWS Secrets Manager and Google Secret Manager respectively.
+   4. External data sources: You can use external data sources to retrieve secrets from external sources such as databases or APIs. External data sources can be defined as custom Terraform providers or as shell scripts that output the secrets in the expected format.
+   5. Encrypted Terraform state: You can encrypt the Terraform state file to protect sensitive data such as resource IDs, passwords, and access keys. Terraform supports several backends such as Amazon S3, Google Cloud Storage, and HashiCorp Consul that can store the encrypted state file.
 
 
 
@@ -61,13 +84,45 @@
 #### 7. What is the big deal about Terraform v0.13 and above?
 
    Answer: Before version 0.13, programming logic was nearly impossible to implement in HCL. With 0.13, it is still not super easy, but a huge progress was made.  There were many other major features released as well (e.g. json output)
+   1. Improved error messages: more context about the source of the error
+   2. Enhanced module management : easier to manage module dependencies and versioning
+   3. Automatic provider installation: automatically installs required providers when you run terraform init.
+   4. Plan diffing: compare the Terraform plan against the current state to identify the differences between them
+   5. Improved resource handling: several improvements to resource handling, including resource for-each, resource lifecycle management, and resource dependencies
 
 
 
 ##
 #### 8. You have 2 folders of terraform code. Folder A and Folder B. Folder B needs to use output (state) from folder A to create resources. How can you accomplish this?
 
-   Answer: This has been long-standing problem with Terraform. Terragrunt is one way to get this done. Others have implement custom Python scripts that copies states back and forthe between folders.
+   Answer: You can use the Terraform Remote State Data Source to reference the state data from Folder A in Folder B and use the output values as input variables for the resources you want to create.
+   1.  In Folder A, configure the backend to store the state in a remote location, such as an S3 bucket by adding 'backend' block.
+    terraform {
+      backend "s3" {
+        bucket = "your-bucket-name"
+        key    = "path/to/your/statefile.tfstate"
+        region = "your-region"
+      }
+    }
+   2. In Folder B, create a data source that references the state data from Folder A. You can do this by adding a data block in your main.tf file
+    data "terraform_remote_state" "folder_a" {
+        backend = "s3"
+        config = {
+            bucket = "your-bucket-name"
+            key    = "path/to/your/statefile.tfstate"
+            region = "your-region"
+        }
+    }
+    3. In Folder B, use the output values from Folder A as input variables for the resources you want to create. You can do this by using the data block you created in step 2 and referencing the output values with the syntax data.
+     terraform_remote_state.folder_a.outputs.<output_name>:
+
+    resource "aws_instance" "example" {
+        ami           = "your-ami-id"
+        instance_type = "t2.micro"
+        subnet_id     = "${data.terraform_remote_state.folder_a.outputs.subnet_id}"
+        vpc_id        = "${data.terraform_remote_state.folder_a.outputs.vpc_id}"
+    }
+
 
 
 
@@ -75,6 +130,11 @@
 #### 9. Why would you need "data" resources in Terraform?
 
    Answer: To refer to resources that already exists  in AWS. For example, list of AMIs in a region.
+   
+   Used to retrieve information from an external system or data source and make it available for use in Terraform configurations
+   1. Retrieving information about an existing resource
+   2. Querying an external API
+   3. Reading data from a file or other external source
 
 
 
@@ -99,6 +159,43 @@
 
    Answer: Hav eno hard-coded variables and use .tfvars file per environment.
 
+   You can use Terraform's module feature. A module is a collection of resources that can be reused across different Terraform configurations.
+   1. Define the resources in a module folder: Create a folder for the module and define the resources you want to deploy in a Terraform configuration file.
+   2. Parameterize the module: Define input variables for the module, which can be used to configure the resources based on the environment. For example, you might have a variable for the environment name, which could be set to "dev", "staging", or "prod".
+   3. Output the resources: Define output variables for the module, which can be used to reference the resources in other Terraform configurations. For example, you might output the resource IDs or IP addresses of the resources.
+   4. Use the module in your Terraform configurations: In each of your environment-specific Terraform configurations, use the module block to call the module and pass in the appropriate input variables. This will create the resources with the desired configuration for that environment.
+
+
+---
+variable "environment" {
+  type = string
+  description = "The name of the environment (e.g. dev, staging, prod)"
+}
+
+variable "instance_type" {
+  type = string
+  description = "The instance type to use for the EC2 instances"
+  default = "t2.micro"
+}
+
+---
+resource "aws_instance" "example" {
+  ami           = "ami-0c55b159cbfafe1f0"
+  instance_type = var.instance_type
+  tags = {
+    Name = "${var.environment}-example-instance"
+  }
+}
+
+---
+module "example" {
+  source      = "./modules/example"
+  environment = "dev"
+  instance_type = "t2.small"
+}
+
+---
+
 
 
 ##
@@ -107,6 +204,105 @@
    Answer: In the same folder where I have terraform files, I would have .gitlabci.yml file which will have various stages (e.g. tfsec, tflint, checkov, terraform validate, 
              terrform plan and terarform apply and possibly some testing stages).
 
+---
+pipeline {
+  agent any
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Init') {
+      steps {
+        sh 'terraform init'
+      }
+    }
+
+    stage('Plan') {
+      steps {
+        script {
+          def tfplan = sh (
+            script: 'terraform plan -out=plan.out',
+            returnStdout: true
+          ).trim()
+
+          if (tfplan.contains('No changes.')) {
+            echo 'No changes, skipping apply.'
+            currentBuild.result = 'SUCCESS'
+          } else {
+            env.TFPLAN = 'plan.out'
+          }
+        }
+      }
+    }
+
+    stage('Apply') {
+      when {
+        expression { env.TFPLAN != null }
+      }
+
+      steps {
+        sh 'terraform apply -auto-approve $TFPLAN'
+      }
+    }
+  }
+
+  post {
+    always {
+      sh 'terraform destroy -auto-approve'
+    }
+  }
+}
+
+---
+pipeline {
+  agent any
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Init') {
+      steps {
+        sh 'terraform init'
+      }
+    }
+
+    stage('Plan') {
+      when {
+        not { branch 'main' }
+      }
+
+      steps {
+        sh 'terraform plan'
+      }
+    }
+
+    stage('Apply') {
+      when {
+        branch 'main'
+      }
+
+      steps {
+        sh 'terraform apply -auto-approve'
+      }
+    }
+  }
+
+  post {
+    always {
+      sh 'terraform destroy -auto-approve'
+    }
+  }
+}
+
+---
 
 ##
 #### 14. Tell me about a project or task that you did in Terraform?
@@ -117,8 +313,7 @@
 ##
 #### 15.  How do you import state from GCP or AWS?
 
-    Answer: Using terraform import command. Format for each resource type may vary. Once you have successfully imported the state, you can also write terraform code to match
-             the state so much your code and state and infrasture are all in sync.
+    Answer: Using terraform import command. Format for each resource type may vary. Once you have successfully imported the state, you can also write terraform code to match the state so much your code and state and infrasture are all in sync.
 
 
 ##
@@ -134,29 +329,51 @@
 
              Backends are configured with a nested backend block within the top-level terraform block:
 
+---
+terraform {
+backend "remote" {
+    organization = "example_corp"
 
-              terraform {
-                backend "remote" {
-                  organization = "example_corp"
-              
-                  workspaces {
-                    name = "my-app-prod"
-                  }
-                }
-              }
+    workspaces {
+    name = "my-app-prod"
+    }
+}
+}
+
+---
+terraform {
+  backend "s3" {
+    bucket = "my-terraform-state-bucket"
+    key    = "terraform.tfstate"
+    region = "us-east-1"
+  }
+}
+
+---
+
 
 ##
 ### 18. What is a provider and why do you need it?
 
-    Answer: Terraform doesn't directly create resources in the cloud. It interacts with provider (given by AWS, GCP, etc.), which enables communication 
-            between Terraform and the cloud provider APIs (AWS, GCP etc.).
+    Answer: Terraform doesn't directly create resources in the cloud. It interacts with provider (given by AWS, GCP, etc.), which enables communication between Terraform and the cloud provider APIs (AWS, GCP etc.).
 
             Using the same idea, Terraform can also deploy resources in non-cloud applications as long as it has a provider (e.g. Hashicorp Vault) 
+
+provider "aws" {
+  region = "us-east-1"
+}
+
+resource "aws_instance" "example" {
+  ami           = "ami-0c55b159cbfafe1f0"
+  instance_type = "t2.micro"
+}
+
 
 ##
 #### 19.  Examples of a data resource in AWS?
 
-     Answer: AMIs, aws_instance
+     Answer: data resources in Terraform allow you to retrieve information about existing resources that were not created using Terraform.
+     AMIs, aws_instance
              Please see:  https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/instance
 
 ##
@@ -170,6 +387,14 @@
 #### 21. Can you mark a variable a "secret" such that it does not show up in logs etc?
 
     Answer: Yes from version 0.14
+    To mark a variable as sensitive, you can use the sensitive argument in the variable declaration block.
+
+variable "password" {
+  type        = string
+  description = "The password for the user"
+  sensitive   = true
+}
+
 
 ##
 #### 22. You made Terraform state using v 0.13. Can you modify it using version 0.12?
