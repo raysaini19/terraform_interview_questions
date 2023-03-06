@@ -332,7 +332,7 @@ pipeline {
     Answer:  This is directly from Hashicorp Web Site:
 
              Backends are configured with a nested backend block within the top-level terraform block:
-
+```
 ---
 terraform {
 backend "remote" {
@@ -354,7 +354,7 @@ terraform {
 }
 
 ---
-
+```
 
 ##
 ### 18. What is a provider and why do you need it?
@@ -362,7 +362,7 @@ terraform {
     Answer: Terraform doesn't directly create resources in the cloud. It interacts with provider (given by AWS, GCP, etc.), which enables communication between Terraform and the cloud provider APIs (AWS, GCP etc.).
 
             Using the same idea, Terraform can also deploy resources in non-cloud applications as long as it has a provider (e.g. Hashicorp Vault) 
-
+```
 provider "aws" {
   region = "us-east-1"
 }
@@ -371,7 +371,7 @@ resource "aws_instance" "example" {
   ami           = "ami-0c55b159cbfafe1f0"
   instance_type = "t2.micro"
 }
-
+```
 
 ##
 #### 19.  Examples of a data resource in AWS?
@@ -392,13 +392,13 @@ resource "aws_instance" "example" {
 
     Answer: Yes from version 0.14
     To mark a variable as sensitive, you can use the sensitive argument in the variable declaration block.
-
+```
 variable "password" {
   type        = string
   description = "The password for the user"
   sensitive   = true
 }
-
+```
 
 ##
 #### 22. You made Terraform state using v 0.13. Can you modify it using version 0.12?
@@ -419,12 +419,30 @@ variable "password" {
 
    Answer: Yes, it is not recommended
 
+```
+module "child" {
+  source = "./modules/child"
+  var1 = "value1"
+  var2 = "value2"
+}
+
+
+module "another_child" {
+  source = "../another_child"
+  var1 = var.var1
+  var2 = var.var2
+}
+
+
+```
 
 ##
 #### 25. Why do we need terraform.tfvars file?
 
-   Answer: If you do not hard code variables, you can set values in terraform.tfvars files (different values per environment).
-           This way, your code doesn't change and you can follow DRY principle.
+   Answer: The terraform.tfvars file is a convenient way to store variables that are needed for your Terraform configuration. It allows you to easily provide input variables that can be used in your configuration without having to modify the configuration itself.
+   If you do not hard code variables, you can set values in terraform.tfvars files (different values per environment).
+   This way, your code doesn't change and you can follow DRY principle.
+   By default, Terraform automatically loads variables from a file named terraform.tfvars if it exists in the root module.
 
 
 ##
@@ -451,6 +469,43 @@ variable "password" {
 #### 29. You have the same tf code. WIth the same code, you want to deploy to N environments (states) and be able switch between them. How?
 
      Answer: Use different .tfvars file for each environment
+     1. Terraform workspaces: 
+     terraform workspace new staging
+     terraform workspace select staging
+
+     2. .tfvars approach 
+
+     ```
+     terraform/
+├── main.tf
+├── variables.tf
+├── dev.tfvars
+├── staging.tfvars
+└── prod.tfvars
+
+main.tf
+'''
+provider "aws" {
+  region = "us-east-1"
+}
+
+resource "aws_s3_bucket" "example" {
+  bucket = var.bucket_name
+}
+'''
+dev.tfvars, staging.tfvars, prod.tfvars
+bucket_name = "my-dev-bucket"
+bucket_name = "my-staging-bucket"
+bucket_name = "my-prod-bucket"
+
+'''
+terraform apply -var-file=dev.tfvars
+terraform apply -var-file=staging.tfvars
+
+'''
+
+
+     ```
 
 
 
@@ -471,16 +526,18 @@ variable "password" {
 ##
 #### 32. What does "terraform refresh do"?
 
-  Answer: terraform refresh reads the local state and goes back to the cloud and finds drift.
+  Answer: Reads the current settings from all managed remote objects and updates the terraform state to match.
+          Terraform refresh reads the local state and goes back to the cloud and finds drift.
           More info here:
           https://stackoverflow.com/questions/42628660/what-does-terraform-refresh-really-do
+          terraform apply -refresh=false
 
 
 ##
 #### 33. You have added some new codes in the outputs.tf file (added more things to output). That is the only thing you have added. What command can you now run
       so that you get to see the results even though no change has happened in any other code or any resources in the cloud?
 
-  Answer: terraform refresh
+  Answer: terraform refresh -> terraform output
 
 
 ##
