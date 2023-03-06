@@ -3,7 +3,9 @@
 # ................... 101 Terraform Interview Questions  ....................
 
 ## By  Mamun Rashid :: https://www.linkedin.com/in/mamunrashid/ :: Please connect with me ::
-
+tfsec- security
+tfenv- version
+Tflint-  odentify issues with your code
 ### Last Updated: 2021.03.09
 ###
 ###
@@ -545,17 +547,26 @@ terraform apply -var-file=staging.tfvars
 
   Answer: It artifically marks a resource as "bad". So, next time you run terraform plan, you will try and re-create the resource regardless if the resource has been modified or not. This is a good way to force immutability.
 
+  When a resource is tainted, it indicates that it needs to be destroyed and recreated on the next terraform apply run, even if no changes have been made to its configuration.
+  terraform taint <resource_name>
+  terraform taint aws_instance.my_instance
+
+
 
 ##
 #### 35. How can you get a list of Terraform resources of a given folder with terraform code?
 
     Answer: terraform state list
 
+    To get a list of resources managed by Terraform in the current working directory.
+
 
 ##
 ### 36. Can you move terraform state from one place to another?
 
     Answer: terraform state mv  ......
+
+    This can be done using the terraform state command along with the -state-out and -state flags.
 
 ##
 #### 37. Can you remove JUST 1 item from your "state"? How?
@@ -566,7 +577,11 @@ terraform apply -var-file=staging.tfvars
 #### 38. Using Terraform , you have deployed 6 resources in AWS. However, a developer deleted on of them via AWS Console. Turns out that , that resource was not needed any way. How can you make your terraform code and terraform state sync up now?
 
     Answer: 1. terraform state rm resource_name &
+                terraform state rm RESOURCE_ADDRESS
+                terraform state rm aws_instance.my-instance
             2. remove the relevant part of the code that creates the deleted resource
+
+            3. Run the command terraform import <resource-type>.<name> <id> to import the deleted resource into the Terraform state. Here, <resource-type>.<name>
 
 
 ##
@@ -579,14 +594,22 @@ terraform apply -var-file=staging.tfvars
 
     Answer:
       "aws_acm_certificate"
+      "aws_ami"
+      "aws_availability_zones"
+      "aws_eip"
+      "aws_route53_zone"
       "aws_api_gateway_account"
       "aws_codecommit_repository" on and on and on
 
 
 ##
 #### 41. How does terraform get access to AWS?
-
-    Answer: Using variable in aws provider section
+```
+    Answer: 1. AWS Access Key and Secret Access Key
+            2. IAM role: You can use an IAM role by setting up an EC2 instance with an IAM role attached or by assuming an IAM role using the AWS CLI.
+            When running Terraform on a cloud-based CI/CD service, such as AWS CodeBuild or Jenkins running on an EC2 instance with an IAM role attached, Terraform can automatically use the instance's IAM role to authenticate with AWS.
+    
+    Using variable in aws provider section
 
     provider "aws" {
         access_key = "<AWS_ACCESS_KEY>"
@@ -594,20 +617,21 @@ terraform apply -var-file=staging.tfvars
         region = "<AWS_REGION>"
     }
 
-
+```
 ##
 #### 42. How would switch between versions of Terraform?
 
     Answer:
       mac brew install tfenv
       tfenv (switches between many versions super easily.)
+      tfenv install 1.0.9
+      tfenv use 1.0.9
+      tfenv list
 
       There are other ways , as well (e.g. using containers and aliases)
 
 ##
-#### 43. Scenario Question: Your terraform code, state and cloud resources are all sync.
-    Now, you run: terraform state rm foo (foo is one of resources). What will happen now,
-    if you run "terraform plan" ?
+#### 43. Scenario Question: Your terraform code, state and cloud resources are all sync. Now, you run: terraform state rm foo (foo is one of resources). What will happen now, if you run "terraform plan" ?
 
     Answer: It will say that , it needs to add the resource "foo"
 
@@ -620,16 +644,35 @@ terraform apply -var-file=staging.tfvars
 #### 45. What does terraform init command do?
 
     Answer: Pulls in any refernced modules , among other things.
+    command is used to initialize a working directory containing Terraform configuration files.
+    1. Downloads the necessary provider plugins
+    2. Initializes the backend configuration
+    3. Downloads any modules referenced in the configuration files
+
+##
+#### 45-1. What does terraform apply command do?
+
+    Answer: 
+    1. Creates an execution plan
+    2. Displays the execution plan
+    3. Prompts for approval
+    4. Applies changes
+    5. Updates state file
+    6. Displays output values
 
 ##
 #### 46. Is there a linting tool for Terraform?
 
-    Answer: Yes. tflint (open source)
+    Answer: Yes. tflint (open source): Identify issues with your code and ensure best practices are followed.
+    1. TFLint: errors and potential issues
+    2. Checkov
+    3. Terrascan
+    4. Sentinel
 
 ##
 #### 47. Is there a tool that can look for security vulnerabilities in your terraform code?
 
-    Answer: Yes. tfsec
+    Answer: Yes. tfsec: open-source static analysis tool that can identify potential security issues in Terraform code.
 
 ##
 #### 48. Does "providers" have versions too?
@@ -995,12 +1038,3 @@ terraform apply -var-file=staging.tfvars
 #### 101. What if you do not want terraform apply to ask for your permission before deploying resources?
 
     Answer: terraform apply --auto-approve
-
-
-             
-
-                                       Terraform Interview Questions
-
-                                               Mamun Rashid
-
-                                   https://www.linkedin.com/in/mamunrashid/
