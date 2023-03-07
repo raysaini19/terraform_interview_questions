@@ -91,11 +91,15 @@ Yes
 14. What is the use of terraform being cloud-agnostic?
 
 It simplifies management and orchestration, helping operators build large-scale multi-cloud infrastructures.
+```
+```
 15. What is the Terraform State?
 
 Every time you run Terraform, it records information about what infrastructure it created in a Terraform state file. 
 By default, when you run Terraform in the folder /some/folder, Terraform creates the file /some/folder/terraform.tfstate. 
 This file contains a custom JSON format that records a mapping from the Terraform resources in your configuration files to the representation of those resources in the real world.
+```
+```
 16. What is the purpose of the Terraform State?
 
 Mapping to the Real World
@@ -108,6 +112,8 @@ For larger infrastructures, querying every resource is too slow. Many cloud prov
 Syncing
 When two people works on the same file and doing some changes to the infrastructure. Its very important for everyone to be working with the same state so that operations will be applied to the same remote objects.
 https://www.terraform.io/docs/state/purpose.html
+```
+```
 17. What is the name of the terraform state file?
 
 terraform.tfstate
@@ -119,6 +125,8 @@ Describe the plug-in based architecture
 Demonstrate using multiple providers
 Describe how Terraform finds and fetches providers
 Explain when to use and not use provisioners and when to use local-exec or remote-exec
+```
+```
 18. How do you install terraform on different OS?
 
 // Mac OS
@@ -126,24 +134,34 @@ brew install terraform
 // Windows
 choco install terraform
 https://learn.hashicorp.com/terraform/getting-started/install
+```
+```
 19. How do you manually install terraform?
 
 step 1: Download the zip fille
 step 2: mv ~/Downloads/terraform /usr/local/bin/terraform
+```
+```
 20. Where do you put terraform configurations so that you can configure some behaviors of Terraform itself?
 
 The special terraform configuration block type is used to configure some behaviors of Terraform itself, such as requiring a minimum Terraform version to apply your configuration.
 terraform {
   # ...
 }
+```
+```
 21. Only constants are allowed inside the terraform block. Is this correct?
 
 Yes
 Within a terraform block, only constant values can be used; arguments may not refer to named objects such as resources, input variables, etc, and may not use any of the Terraform language built-in functions.
+```
+```
 22. What are the Providers?
 
 A provider is a plugin that Terraform uses to translate the API interactions with the service. A provider is responsible for understanding API interactions and exposing resources. Because Terraform can interact with any API, you can represent almost any infrastructure type as a resource in Terraform.
 https://www.terraform.io/docs/configuration/providers.html
+```
+```
 23. How do you configure a Provider?
 
 provider "google" {
@@ -152,21 +170,31 @@ provider "google" {
 }
 The name given in the block header ("google" in this example) is the name of the provider to configure. Terraform associates each resource type with a provider by taking the first word of the resource type name (separated by underscores), and so the "google" provider is assumed to be the provider for the resource type name google_compute_instance.
 The body of the block (between { and }) contains configuration arguments for the provider itself. Most arguments in this section are specified by the provider itself; in this example both project and region are specific to the google provider.
+```
+```
 24. What are the meta-arguments that are defined by Terraform itself and available for all provider blocks?
 
 version: Constraining the allowed provider versions
 alias: using the same provider with different configurations for different resources
+```
+```
 25. What is Provider initialization and why do we need?
 
 Each time a new provider is added to configuration -- either explicitly via a provider block or by adding a resource from that provider -- Terraform must initialize the provider before it can be used. 
 Initialization downloads and installs the provider's plugin so that it can later be executed.
+```
+```
 26. How do you initialize any Provider?
 
 Provider initialization is one of the actions of terraform init. Running this command will download and initialize any providers that are not already initialized.
+```
+```
 27. When you run terraform init command, all the providers are installed in the current working directory. Is this true?
 
 Providers downloaded by terraform init are only installed for the current working directory; other working directories can have their own installed provider versions.
 Note that terraform init cannot automatically download providers that are not distributed by HashiCorp. See Third-party Plugins below for installation instructions.
+```
+```
 28. How do you constrain the provider version?
 
 To constrain the provider version as suggested, add a required_providers block inside a terraform block:
@@ -175,11 +203,15 @@ terraform {
     aws = "~> 1.0"
   }
 }
+```
+```
 29. How do you upgrade to the latest acceptable version of the provider?
 
 terraform init --upgrade
 It upgrade to the latest acceptable version of each provider
 This command also upgrades to the latest versions of all Terraform modules.
+```
+```
 30. How many ways you can configure provider versions?
 
 1. With required_providers blocks under terraform block
@@ -192,16 +224,22 @@ terraform {
 provider {
   version= "1.0"
 }
+```
+```
 31. How do you configure Multiple Provider Instances?
 
 alias
-You can optionally define multiple configurations for the same provider, and select which one to use on a per-resource or per-module basis. 
+You can optionally define multiple configurations for the same provider, and select which one to use on a per-resource or per-module basis.
+```
+``` 
 32. Why do we need Multiple Provider instances?
 
 Some of the example scenarios:
 a. multiple regions for a cloud platform
 b. targeting multiple Docker hosts
 c. multiple Consul hosts, etc.
+```
+```
 33. How do we define multiple Provider configurations?
 
 To include multiple configurations for a given provider, include multiple provider blocks with the same provider name, but set the alias meta-argument to an alias name to use for each additional configuration.
@@ -215,6 +253,8 @@ provider "aws" {
   alias  = "west"
   region = "us-west-2"
 }
+```
+```
 34. How do you select alternate providers?
 
 By default, resources use a default provider configuration inferred from the first word of the resource type name. For example, a resource of type aws_instance uses the default (un-aliased) aws provider configuration unless otherwise stated.
@@ -223,44 +263,66 @@ resource "aws_instance" "foo" {
 
   # ...
 }
+```
+```
 35. What is the location of the user plugins directory?
 
 Windows                     %APPDATA%\terraform.d\plugins
 All other systems           ~/.terraform.d/plugins
+```
+```
 36. Third-party plugins should be manually installed. Is that true?
 
 True
+
+```
+```
 37. The command terraform init cannot install third-party plugins? True or false?
 
 True
 Install third-party providers by placing their plugin executables in the user plugins directory. The user plugins directory is in one of the following locations, depending on the host operating system
 Once a plugin is installed, terraform init can initialize it normally. You must run this command from the directory where the configuration files are located.
+```
+```
 38. What is the naming scheme for provider plugins?
 
 terraform-provider-<NAME>_vX.Y.Z
+```
+```
 39. What is the CLI configuration File?
 
 The CLI configuration file configures per-user settings for CLI behaviors, which apply across all Terraform working directories.
 It is named either .terraformrc or terraform.rc
+```
+```
 40. Where is the location of the CLI configuration File?
 
 On Windows, the file must be named named terraform.rc and placed in the relevant user's %APPDATA% directory.
 On all other systems, the file must be named .terraformrc (note the leading period) and placed directly in the home directory of the relevant user.
 The location of the Terraform CLI configuration file can also be specified using the TF_CLI_CONFIG_FILE environment variable.
+```
+```
 41. What is Provider Plugin Cache?
 
 By default, terraform init downloads plugins into a subdirectory of the working directory so that each working directory is self-contained. As a consequence, if you have multiple configurations that use the same provider then a separate copy of its plugin will be downloaded for each configuration.
 Given that provider plugins can be quite large (on the order of hundreds of megabytes), this default behavior can be inconvenient for those with slow or metered Internet connections. 
 Therefore Terraform optionally allows the use of a local directory as a shared plugin cache, which then allows each distinct plugin binary to be downloaded only once.
+
+```
+```
 42. How do you enable Provider Plugin Cache?
 
 To enable the plugin cache, use the plugin_cache_dir setting in the CLI configuration file.
 plugin_cache_dir = "$HOME/.terraform.d/plugin-cache"
 Alternatively, the TF_PLUGIN_CACHE_DIR environment variable can be used to enable caching or to override an existing cache directory within a particular shell session:
+```
+```
 43. When you are using plugin cache you end up growing cache directory with different versions. Whose responsibility to clean it?
 
 User
 Terraform will never itself delete a plugin from the plugin cache once it's been placed there. Over time, as plugins are upgraded, the cache directory may grow to contain several unused versions which must be manually deleted.
+```
+```
 44. Why do we need to initialize the directory?
 
 When you create a new configuration — or check out an existing configuration from version control — you need to initialize the directory
@@ -275,35 +337,63 @@ resource "aws_instance" "example" {
   instance_type = "t2.micro"
 }
 Initializing a configuration directory downloads and installs providers used in the configuration, which in this case is the aws provider. Subsequent commands will use local settings and data during initialization.
+
+```
+```
 45. What is the command to initialize the directory?
 
 terraform init
+```
+```
+
 46. If different teams are working on the same configuration. How do you make files to have consistent formatting?
 
 terraform fmt
 This command automatically updates configurations in the current directory for easy readability and consistency.
+
+```
+```
 47. If different teams are working on the same configuration. How do you make files to have syntactically valid and internally consistent?
 
 terraform validate
 This command will check and report errors within modules, attribute names, and value types.
 Validate your configuration. If your configuration is valid, Terraform will return a success message.
+
+```
+```
 48. What is the command to create infrastructure?
 
 terraform apply
+
+```
+```
 49. What is the command to show the execution plan and not apply?
 
 terraform plan
+
+```
+```
 50. How do you inspect the current state of the infrastructure applied?
+
 
 terraform show
 When you applied your configuration, Terraform wrote data into a file called terraform.tfstate. This file now contains the IDs and properties of the resources Terraform created so that it can manage or destroy those resources going forward.
+
+
+```
+```
 51. If your state file is too big and you want to list the resources from your state. What is the command?
 
 terraform state list
 https://learn.hashicorp.com/terraform/getting-started/build#manually-managing-state
+
+```
+```
 52. What is plug-in based architecture?
 
+
 Defining additional features as plugins to your core platform or core application. This provides extensibility, flexibility and isolation
+```
 53. What are Provisioners?
 
 If you need to do some initial setup on your instances, then provisioners let you upload files, run shell scripts, or install and trigger other software like configuration management tools, etc.
@@ -1201,6 +1291,8 @@ You will see the output when you run the following command
 terraform apply
 You can query the output with the following command
 terraform output ip
+```
+```
 215. What are the dynamic blocks?
 
 some resource types include repeatable nested blocks in their arguments, which do not accept expressions
@@ -1209,18 +1301,26 @@ A dynamic block acts much like a for expression, but produces nested blocks inst
 https://www.terraform.io/docs/configuration/expressions.html#dynamic-blocks
 
 example using dynamic blocks
+```
+```
 216. What are the best practices for dynamic blocks?
 
 Overuse of dynamic blocks can make configuration hard to read and maintain, so we recommend using them only when you need to hide details in order to build a clean user interface for a re-usable module. 
 Always write nested blocks out literally where possible.
+```
+```
 217. What are the Built-in Functions?
 
 The Terraform language includes a number of built-in functions that you can call from within expressions to transform and combine values.
 max(5, 12, 9)
+```
+```
 218. Does Terraform language support user-defined functions?
 
 No
 The Terraform language does not support user-defined functions, and so only the functions built in to the language are available for use.
+```
+```
 219. What is the built-in function to change string to a number?
 
 parseint parses the given string as a representation of an integer in the specified base and returns the resulting number. The base must be between 2 and 62 inclusive.
@@ -1228,11 +1328,15 @@ parseint parses the given string as a representation of an integer in the specif
 100
 More Number Functions here
 https://www.terraform.io/docs/configuration/functions/abs.html
+```
+```
 220. What is the built-in function to evaluates given expression and returns a boolean whether the expression produced a result without any errors?
 
 can
 condition     = can(formatdate("", var.timestamp))
 https://www.terraform.io/docs/configuration/functions/can.html
+```
+```
 221. What is the built-in function to evaluates all of its argument expressions in turn and returns the result of the first one that does not produce any errors?
 
 try
@@ -1242,15 +1346,21 @@ locals {
     tolist(var.example),
   )
 }
+```
+```
 222. What is Resource Address?
 
 A Resource Address is a string that references a specific resource in a larger infrastructure. An address is made up of two parts:
 [module path][resource spec]
+```
+```
 223. What is the Module path?
 
 A module path addresses a module within the tree of modules. It takes the form:
 module.A.module.B.module.C...
 Multiple modules in a path indicate nesting. If a module path is specified without a resource spec, the address applies to every resource within the module. If the module path is omitted, this addresses the root module.
+```
+```
 224. What is the Resource spec?
 
 A resource spec addresses a specific resource in the config. It takes the form:
@@ -1275,6 +1385,8 @@ resource "aws_instance" "web" {
   }
 }
 aws_instance.web["example"] // Refers to only the "example" instance in the config.
+```
+```
 225. What are complex types and what are the collection types Terraform supports?
 
 A complex type is a type that groups multiple values into a single value.
@@ -1286,6 +1398,8 @@ collection types (for grouping similar values)
 structural types (for grouping potentially dissimilar values).
 * object(...): a collection of named attributes that each have their own type.
 * tuple(...): a sequence of elements identified by consecutive whole numbers starting with zero, where each element has its own type.
+```
+```
 226. What are the named values available and how do we refer to?
 
 Terraform makes several kinds of named values available. Each of these names is an expression that references the associated value; you can use them as standalone expressions, or combine them with other expressions to compute new values.
@@ -1298,18 +1412,26 @@ Terraform makes several kinds of named values available. Each of these names is 
 * path.root is the filesystem path of the root module of the configuration.
 * path.cwd is the filesystem path of the current working directory. In normal use of Terraform this is the same as path.root, but some advanced uses of Terraform run it from a directory other than the root module directory, causing these paths to be different.
 * terraform.workspace is the name of the currently selected workspace.
+```
+```
 227. What is the built-in function that reads the contents of a file at the given path and returns them as a base64-encoded string?
 
 filebase64(path)
 https://www.terraform.io/docs/configuration/functions/filebase64.html
+```
+```
 228. What is the built-in function that converts a timestamp into a different time format?
 
 formatdate(spec, timestamp)
 https://www.terraform.io/docs/configuration/functions/formatdate.html
+```
+```
 229. What is the built-in function encodes a given value to a string using JSON syntax?
 
 jsonencode({"hello"="world"})
 https://www.terraform.io/docs/configuration/functions/jsonencode.html
+```
+```
 230. What is the built-in function that calculates a full host IP address for a given host number within a given IP network address prefix?
 
 > cidrhost("10.12.127.0/20", 16)
@@ -1321,18 +1443,26 @@ Practice questions based on these concepts
 Describe the benefits of Sentinel, registry, and workspaces
 Differentiate OSS and Terraform Cloud workspaces
 Summarize features of Terraform Cloud
+```
+```
 231. What is Sentinel?
 
 Sentinel is an embedded policy-as-code framework integrated with the HashiCorp Enterprise products. It enables fine-grained, logic-based policy decisions, and can be extended to use information from external sources.
+```
+```
 232. What is the benefit of Sentinel?
 
 Codifying policy removes the need for ticketing queues, without sacrificing enforcement.
 One of the other benefits of Sentinel is that it also has a full testing framework.
 Avoiding a ticketing workflow allows organizations to provide more self-service capabilities and end-to-end automation, minimizing the friction for developers and operators.
 https://www.hashicorp.com/blog/why-policy-as-code/
+```
+```
 233. What is the Private Module Registry?
 
 Terraform Cloud's private module registry helps you share Terraform modules across your organization. It includes support for module versioning, a searchable and filterable list of available modules, and a configuration designer to help you build new workspaces faster.
+```
+```
 234. What is the difference between public and private module registries when defined source?
 
 The public registry uses a three-part <NAMESPACE>/<MODULE NAME>/<PROVIDER> format
@@ -1342,25 +1472,41 @@ module "vpc" {
   source  = "app.terraform.io/example_corp/vpc/aws"
   version = "1.0.4"
 }
+```
+```
 235. Where is the Terraform Module Registry available at?
 
 https://registry.terraform.io/
+```
+```
 236. What is a workspace?
 
+
 A workspace contains everything Terraform needs to manage a given collection of infrastructure, and separate workspaces function like completely separate working directories.
+```
+```
 237. What are the benefits of workspaces?
 
 https://www.hashicorp.com/resources/terraform-enterprise-understanding-workspaces-and-modules/
+```
+```
 238. You are configuring a remote backend in the terraform cloud. You didn’t create an organization before you do terraform init. Does it work?
 
 While the organization defined in the backend stanza must already exist,
+```
+```
 239. You are configuring a remote backend in the terraform cloud. You didn’t create a workspace before you do terraform init. Does it work?
 
 Terraform Cloud will create it if necessary. If you opt to use a workspace that already exists, the workspace must not have any existing states.
+```
+```
 240. Terraform workspaces when you are working with CLI and Terraform workspaces in the Terraform cloud. Is this correct?
 
 If you are familiar with running Terraform using the CLI, you may have used Terraform workspaces. Terraform Cloud workspaces behave differently than Terraform CLI workspaces. Terraform CLI workspaces allow multiple state files to exist within a single directory, enabling you to use one configuration for multiple environments. Terraform Cloud workspaces contain everything needed to manage a given set of infrastructure, and function like separate working directories.
+```
+```
 241. How do you authenticate the CLI with the terraform cloud?
+
 
 Newer Versions:
 1. terraform login
@@ -1373,12 +1519,16 @@ credentials "app.terraform.io" {
   token = "xxxxxx.atlasv1.zzzzzzzzzzzzz"
 }
 https://www.terraform.io/docs/commands/cli-config.html#credentials
+```
+```
 242. You are building infrastructure on your local machine and you changed your backend to remote backend with the Terraform cloud. What should you do to migrate the state to the remote backend?
 
 terraform init
 Once you have authenticated the remote backend, you're ready to migrate your local state file to Terraform Cloud. To begin the migration, reinitialize. This causes Terraform to recognize your changed backend configuration.
 During reinitialization, Terraform presents a prompt saying that it will copy the state file to the new backend. Enter "yes" and Terraform will migrate the state from your local machine to Terraform Cloud.
 https://learn.hashicorp.com/terraform/tfc/tfc_migration#migrate-the-state-file
+```
+```
 243. How do you configure remote backend with the terraform cloud?
 
 You need to configure in the terraform block
@@ -1392,27 +1542,40 @@ terraform {
     }
   }
 }
+```
+```
 244. What is Run Triggers?
 
 Terraform Cloud’s run triggers allow you to link workspaces so that a successful apply in a source workspace will queue a run in the workspace linked to it with a run trigger. 
 For example, adding new subnets to your network configuration could trigger an update to your application configuration to rebalance servers across the new subnets.
+```
+```
 245. What is the benefit of Run Triggers?
 
 When managing complex infrastructure with Terraform Cloud, organizing your configuration into different workspaces helps you to better manage and design your infrastructure. 
 Configuring run triggers between workspaces allows you to set up infrastructure pipelines as part of your overall deployment strategy.
+```
+```
 246. What are the available permissions that terraform clouds can have?
 
 Terraform Cloud teams can have read, plan, write, or admin permissions on individual workspaces.
+```
+```
 247. Who can grant permissions on the workspaces?
 
 Organization owners grant permissions by grouping users into teams and giving those teams priviliges based on their need for access to individual workspaces.
 248. Which plan do you need to manage teams on Terraform cloud?
 
 Team Plan
+```
+```
 249. How can you add users to an organization?
 
 You can add users to an organization by inviting them using their email address.
 Even if your team member has not signed up for Terraform Cloud yet, they can still accept the invitation and create a new account.
+```
+```
 250. The Terraform Cloud Team plan charges you on a per-user basis. Is this true?
 
 Yes. The Terraform Cloud Team plan is charged on a per-user basis so adding new users to your organization incurs cost.
+```
