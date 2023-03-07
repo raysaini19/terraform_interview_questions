@@ -717,15 +717,15 @@ terraform apply -var-file=staging.tfvars
        file to deploy lambda function to AWS.
 
 ##
-#### 53. If you 10 different .tf files in a folder, in what order does Terraform 
-    execute the code?
+#### 53. If you have 10 different .tf files in a folder, in what order does Terraform  execute the code?
 
-    Answer: Order is irrelevant. Terraform makes map based on all the .tf files and 
+    Answer: Order is irrelevant/undefined. Terraform makes map based on all the .tf files and 
             executed based on that plan, not sequentially.
 
+            Its important to define dependencies explicitly using depends_on, count, and for_each attributes to ensure that resources are created in the correct order
+
 ##
-#### 54. You have mades changes to your code. You did not run terraform plan. You now run
-    terraform apply. What will happen?
+#### 54. You have mades changes to your code. You did not run terraform plan. You now run terraform apply. What will happen?
 
     Answer: terraform will run terraform plan anyway before running terraform apply
 
@@ -733,17 +733,74 @@ terraform apply -var-file=staging.tfvars
 #### 55. Besides terraform.tfvars file, which other files does terraform load for variable values?
 
     Answer: *.auto.tfvars
+    order of precedence/acknowledged:
+    1. Environment variables starting with TF_VAR_
+    2. The terraform.tfvars file, if present.
+    3. Any *.auto.tfvars or *.auto.tfvars.json files, processed in lexical order of their filenames.
+    4. Any -var command line options, in the order they are provided.
 
 ##
-#### 56. You are building ec2 machines via terraform. However, you also have to install 
-    software and configurations on these ec2 machines. How can you do this using Terraform?
+#### 56. You are building ec2 machines via terraform. However, you also have to install software and configurations on these ec2 machines. How can you do this using Terraform?
 
-    Answer: There are multiple ways. One way is to use user-data scripts.
+    Answer: There are multiple ways:
+```
+    1. User data: user_data argument in the aws_instance resource.
+    2. Remote-exec provisioner: used to execute commands on a remote resource after it has been created
+    3. Configuration management tools: Terraform can be used in conjunction with configuration management tools such as Ansible, Chef, or Puppet to install and configure software and settings on EC2 instances
 
+resource "aws_instance" "example" {
+  ami           = "ami-0c55b159cbfafe1f0"
+  instance_type = "t2.micro"
+  subnet_id     = "subnet-abc123"
+
+  # User data script to download and run additional configuration files
+  user_data = <<-EOF
+              #!/bin/bash
+              sudo apt-get update
+              sudo apt-get install -y apache2
+              wget https://example.com/config.cfg
+              chmod +x config.cfg
+              ./config.cfg
+              EOF
+
+  tags = {
+    Name = "example-instance"
+  }
+
+  # Use the file provisioner to upload additional scripts to the EC2 instance
+  provisioner "file" {
+    source      = "/path/to/local/script.sh"
+    destination = "/home/ubuntu/script.sh"
+  }
+
+  # Use the remote-exec provisioner to install nginx
+  provisioner "remote-exec" {
+    inline = [
+      "sudo apt-get update",
+      "sudo apt-get install -y nginx",
+      "sudo mv /tmp/nginx.conf /etc/nginx/nginx.conf",
+      "sudo systemctl restart nginx"
+    ]
+  }
+}
+
+```
 ##
 #### 57. How to create ssh key using terraform:
 
-    Answer:  Terraform can generate SSL/SSH private keys using the tls_private_key
+    Answer:  Terraform can generate SSL/SSH private keys using the tls_private_key.
+```
+    To create an SSH key using Terraform, you can use the tls_private_key resource provided by the tls provider.
+
+resource "tls_private_key" "my_ssh_key" {
+  algorithm   = "RSA"
+  rsa_bits    = 4096
+}
+
+output "public_key" {
+  value = tls_private_key.my_ssh_key.public_key_openssh
+}
+```
 
 ##
 #### 58.  How can you do "if-then-else" logic in Terraform version 0.13 and above?
@@ -754,15 +811,73 @@ terraform apply -var-file=staging.tfvars
          var.a != "" ? var.a : "default-a"
          If var.a is an empty string then the result is "default-a", but otherwise it is the actual value of var.a.
 
+```
+resource "aws_instance" "example" {
+  ami           = var.ami_id
+  instance_type = var.instance_type
+
+  # If condition
+  subnet_id = var.use_private_subnet ? var.private_subnet_id : var.public_subnet_id
+
+  # If-else condition
+  tags = {
+    Name = var.name
+    env  = var.env != "" ? var.env : "dev"
+  }
+}
+subnet_id is set to var.private_subnet_id if the var.use_private_subnet is true, otherwise, it's set to var.public_subnet_id.
+
+
+
+variable "environment" {
+  type = string
+  default = "dev"
+}
+
+resource "aws_instance" "example" {
+  ami           = "ami-0c55b159cbfafe1f0"
+  instance_type = "t2.micro"
+  
+  count = var.environment == "prod" ? 2 : 1  # if-then-else condition
+  
+  tags = {
+    Name = "${var.environment}-example"
+  }
+}
+
+```
+
 ##
 #### 59. What is "Dynamic Block" in Terraform?
 
-    Answer: It is kind of like a for loop.
+    Answer: It allows us to dynamically generate a complex nested block configuration based on the variables passed to it. It is kind of like a for loop.
+```
 
+dynamic "<BLOCK_TYPE>" {
+  for_each = <COLLECTION>
+  content {
+    <BLOCK_CONTENTS>
+  }
+}
+
+
+resource "aws_security_group" "example" {
+  name_prefix = "example"
+  dynamic "ingress" {
+    for_each = var.ingress_rules
+    content {
+      from_port   = ingress.value.from_port
+      to_port     = ingress.value.to_port
+      protocol    = ingress.value.protocol
+      cidr_blocks = ingress.value.cidr_blocks
+    }
+  }
+}
+
+```
 
 ##
-#### 60. During terraform plan , a resource is successful  (i.e. there are no issues with terraform plan), 
-    but fails during provisioning (i.e. during "apply") , what happens to the resource in terraform state?
+#### 60. During terraform plan , a resource is successful  (i.e. there are no issues with terraform plan), but fails during provisioning (i.e. during "apply") , what happens to the resource in terraform state?
 
     Answer: It is marked as "tainted"
 
@@ -786,7 +901,8 @@ terraform apply -var-file=staging.tfvars
 ##
 #### 64. What is the difference between provideer and a plugin?
 
-    Answer: It is kind of same, but not :-)
+    Answer: A provider defines a set of resource types for an upstream service, while a plugin is the binary implementation of the provider that Terraform loads at runtime.
+    It is kind of same, but not :-)
       Best answer is given here:
       https://stackoverflow.com/questions/63440271/understanding-terraform-provider-and-plugin
 
@@ -796,8 +912,7 @@ terraform apply -var-file=staging.tfvars
     Answer: main.tf  (For the reader of your code, this is the entrypoint)
 
 ##
-#### 66. You have code for resource A and resource B in your main.tf . However, you do not want resource B created until resource A
-    is created.  How do you accomplish this?
+#### 66. You have code for resource A and resource B in your main.tf . However, you do not want resource B created until resource A is created.  How do you accomplish this?
 
     Answer: In the block for resource B, add a depends_on parameter.
 
@@ -806,10 +921,30 @@ terraform apply -var-file=staging.tfvars
 
     Answer: Yes.
 
+```
+data "aws_subnet_ids" "example" {
+  vpc_id = "vpc-12345678"
+}
+
+data "aws_subnet" "filtered" {
+  count = length(data.aws_subnet_ids.example.ids)
+  ids   = [data.aws_subnet_ids.example.ids[count.index]]
+  
+  filter {
+    name   = "tag:Environment"
+    values = ["production"]
+  }
+}
+we first use the aws_subnet_ids data source to retrieve a list of all subnet IDs in the VPC with ID "vpc-12345678". We then use the count meta-argument and length function to iterate over each subnet ID in the list.
+
+Inside the aws_subnet data source, we use the ids argument to specify the ID of the subnet we want to retrieve. We use a list comprehension to select the subnet ID based on the current index of the count loop. We then use the filter block to specify the tag name and value we want to filter on
+
+```
+
 ##
 #### 68. Which will tell terraform to look for all module source lines and retrieves the module codes and report errors if can't find them ?
 
-    Answer: terraform get
+    Answer: terraform get: command tells Terraform to look for all module source lines in the configuration and retrieve the modules' code from their sources. If Terraform can't find a module, it reports an error.
 
 ##
 #### 69. What is a terraform provisioner?
@@ -822,18 +957,28 @@ terraform apply -var-file=staging.tfvars
 ##
 #### 70. Examples of provisioners:
 
-    Answer: local-exec , remote-exec
+    Answer: local-exec , remote-exec, File, Ansible, Chef, PowerShell
 
 ##
 #### 71. What is a null resource?
 
     Answer: It is a thing runs through the resource life-cycle, but actually does nothing.
+    It is often used when some work needs to be done outside of the actual resource creation process, like running a script, invoking an API, or updating a DNS record.
+    Null resources don't create or manage infrastructure, they don't have any lifecycle attributes like create_before_destroy or prevent_destroy.
+
+```
+resource "null_resource" "local_shell" {
+  provisioner "local-exec" {
+    command = "sh ./local_script.sh"
+  }
+}
+
+```
 
 ##
 #### 72. If a null resource takes no action, what could possibly a use case for it?
 
-    Answer: null resource has a magic parameter called "triggers". Any change in the triggers, makes the null-resource run its resource
-            cycle again.
+    Answer: null resource has a magic parameter called "triggers". Any change in the triggers, makes the null-resource run its resourcecycle again.
 
 
             Here is example from:  
@@ -861,25 +1006,63 @@ terraform apply -var-file=staging.tfvars
 
             In the above example, any changes to the contents of the Kubernetes config file or Kubernetes YAML will cause the command to rerun.
 
+
+```
+Example of using a null resource to execute a shell script as part of a Terraform deployment.
+
+resource "null_resource" "example" {
+  triggers = {
+    # Re-run the script whenever the "message" input variable changes
+    message = var.message
+  }
+
+  provisioner "local-exec" {
+    command = "echo ${var.message} > /tmp/message.txt"
+  }
+}
+
+```
 ##
 #### 73. You want to run terraform plan. However, you want to point to a non-default state file. How?
 
     Answer: -state=PATH
+    terraform plan -state=path/to/state/file
+This will tell Terraform to use the state file located at path/to/state/file instead of the default location.
 
 
 
 ##
 #### 74. True or False: Providers and provisioners are both provided via plugins.
 
-    Answer: True
+    Answer: True, they have distinct roles in the Terraform workflow.
+
+    Provider plugin is responsible for communicating with the underlying API of the target infrastructure platform, allowing Terraform to create, modify, or destroy resources.
+
+     provisioner is a type of resource that executes scripts or commands on an existing resource during the resource's creation or destruction.
 
 
 ##
 ##### 75. Can terraform handle map type variable natively?
 
     Answer: Yes
+```
+variable "instance_tags" {
+  type = map(string)
+  default = {
+    Name = "web-server"
+    Environment = "production"
+  }
+}
 
 
+resource "aws_instance" "example" {
+  ami           = "ami-0c55b159cbfafe1f0"
+  instance_type = "t2.micro"
+
+  tags = var.instance_tags
+}
+
+```
 ##
 #### 76.  A ________ type is a type that groups multiple values into a single value.
 
@@ -897,6 +1080,36 @@ terraform apply -var-file=staging.tfvars
 #### 78.  If you want 2 identical aws provider sections, then you have use :
 
      Answer:  alias keyword on the 2nd one.
+
+```
+provider "aws" {
+  region = "us-west-2"
+  access_key = "access_key"
+  secret_key = "secret_key"
+}
+
+provider "aws" {
+  region = "us-east-1"
+  alias  = "east"
+  access_key = "access_key"
+  secret_key = "secret_key"
+}
+
+
+resource "aws_instance" "example" {
+  ami           = "ami-0c55b159cbfafe1f0"
+  instance_type = "t2.micro"
+  provider      = aws
+}
+
+
+resource "aws_instance" "example" {
+  ami           = "ami-0c55b159cbfafe1f0"
+  instance_type = "t2.micro"
+  provider      = aws.east
+}
+
+```
 
 
 ##
@@ -921,6 +1134,18 @@ terraform apply -var-file=staging.tfvars
 
 
     Answer: Just make the bucket encrypted
+```
+terraform {
+  backend "s3" {
+    bucket = "my-terraform-state-bucket"
+    key    = "terraform.tfstate"
+    region = "us-east-1"
+
+    encrypt = true
+    kms_key_id = "arn:aws:kms:us-east-1:123456789012:key/abcd1234-abcd-1234-abcd-1234abcd1234"
+  }
+}
+```
 
 ##
 #### 84. _________ command creates a visual graph of Terraform resources:
@@ -932,7 +1157,8 @@ terraform apply -var-file=staging.tfvars
 #### 85. What allows terraform users to apply policy as code to enforce standardized configurations for resources being deployed?
 
 
-    Answer: Sentinel
+    Answer: Terraform Sentinel allows Terraform users to apply policy as code to enforce standardized configurations for resources being deployed.
+    Sentinel policies can be used to restrict resource configurations, enforce naming conventions, and ensure security best practices are followed during deployment.
 
 ##
 #### 86. When terraform init downloads plugins, where does it save it?
@@ -967,8 +1193,7 @@ terraform apply -var-file=staging.tfvars
     Answer: index
 
 ##
-#### 91. Scenario Question: You wrote some terraform code. You ran plan and apply and resources got created. Then, you ran terraform destroy and resources got
-      destroyed. What happens if you now run "terraform plan" ?
+#### 91. Scenario Question: You wrote some terraform code. You ran plan and apply and resources got created. Then, you ran terraform destroy and resources got destroyed. What happens if you now run "terraform plan" ?
 
 
     Answer: It will say that it needs to re-create the same resources again.
@@ -978,7 +1203,7 @@ terraform apply -var-file=staging.tfvars
 ##### 92. Is Terraform idempotent?
 
 
-   Answer: Yes
+   Answer: Yes, This means that running the same Terraform code multiple times will result in the same infrastructure configuration, as Terraform only makes changes to the infrastructure if it detects differences between the desired and actual state. If the desired and actual state match, Terraform will not make any changes
 
 
 ##
@@ -986,13 +1211,14 @@ terraform apply -var-file=staging.tfvars
 
 
     Answer: It's the folder that may or may not call other child modules , but no other code calls this folder as a module.
+    The root module is where the main Terraform configuration files (main.tf, variables.tf, outputs.tf, etc.
+    the root module is the entry point for Terraform execution, and it is responsible for defining the overall infrastructure configuration and any child modules that need to be included.
 
 ##
 ##### 94. Why is root module called a "module" when its just a folder?
 
 
-    Answer: Because, any folder can be used as a child module. For example, if you have codes in folder A, you can call it from folder B,
-              as if folder A is a module.
+    Answer: Because, any folder can be used as a child module. For example, if you have codes in folder A, you can call it from folder B, as if folder A is a module.
 
 
 ##
