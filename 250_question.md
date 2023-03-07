@@ -1291,7 +1291,7 @@ You will see the output when you run the following command
 terraform apply
 You can query the output with the following command
 terraform output ip
-```
+
 ```
 215. What are the dynamic blocks?
 
