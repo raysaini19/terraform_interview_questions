@@ -1264,3 +1264,51 @@ terraform {
 #### 101. What if you do not want terraform apply to ask for your permission before deploying resources?
 
     Answer: terraform apply --auto-approve
+##
+#### 102. There is something wrong with the Terraform version that Alice is using. The HashiCorp team has requested to store the crash logs to a file and send the file over email. What is the way for Alice to store the logs to a file named /tmp/kplabs-tf-crash.log
+
+
+    Answer: create a environment varialble named TF_LOG_PATH=/tmp/kplabs-tf-crash.log
+TF_DEDUG=true
+
+##
+#### 103. Matt has a requirement to reference a local value to another local value in the same terraform code. Is this feature supported in Terraform?
+
+    Answer: yes
+##
+#### 103. Based on the following Terraform code, what is the name of IAM User that will be created?
+variable "elb_names" {
+  type = list
+  default = ["dev-loadbalancer", "stage-loadbalanacer","prod-loadbalancer"]
+}
+ 
+resource "aws_iam_user" "lb" {
+  name = var.elb_names[count.index]
+  count = 2
+  path = "/system/"
+}
+
+    Answer: dev-loadbalancer and  stage-loadbalancer
+    Since count is set to 2, there will be a total of 2 objects that will be created from the list.
+##
+
+#### 104. Matt wants to quickly validate syntax error in the Terraform code that he has written. Initially, Matt used to run "terraform plan" but it takes lot of time. Will terraform validate command be useful in this use-case?
+
+    Answer: true, The terraform validate command validates the configuration files in a directory, referring only to the configuration and not accessing any remote services such as remote state, provider APIs, etc.
+##
+
+
+
+#### 105. Following is an exert of the code which Alice has written. There is a reference to count.index in Tags.
+variable "tags" {
+  type = list
+  default = ["firstec2","secondec2","thirdec2"]
+}
+ 
+  tags = {
+     Name = element(var.tags,count.index)
+   }
+   If count.index is set to 1, which of the following values will be used?
+
+    Answer: secondec2, count.index counts the distinct index number (starting with 0)
+##
