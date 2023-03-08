@@ -1277,6 +1277,7 @@ TF_DEDUG=true
     Answer: yes
 ##
 #### 103. Based on the following Terraform code, what is the name of IAM User that will be created?
+```
 variable "elb_names" {
   type = list
   default = ["dev-loadbalancer", "stage-loadbalanacer","prod-loadbalancer"]
@@ -1287,7 +1288,7 @@ resource "aws_iam_user" "lb" {
   count = 2
   path = "/system/"
 }
-
+```
     Answer: dev-loadbalancer and  stage-loadbalancer
     Since count is set to 2, there will be a total of 2 objects that will be created from the list.
 ##
@@ -1300,6 +1301,7 @@ resource "aws_iam_user" "lb" {
 
 
 #### 105. Following is an exert of the code which Alice has written. There is a reference to count.index in Tags.
+```
 variable "tags" {
   type = list
   default = ["firstec2","secondec2","thirdec2"]
@@ -1308,7 +1310,8 @@ variable "tags" {
   tags = {
      Name = element(var.tags,count.index)
    }
+   
    If count.index is set to 1, which of the following values will be used?
-
+```
     Answer: secondec2, count.index counts the distinct index number (starting with 0)
 ##
