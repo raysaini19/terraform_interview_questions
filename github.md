@@ -1,7 +1,5 @@
 1. What is a GitHub Actions workflow?
-
 Answer: A GitHub Actions workflow is an automated process that runs one or more jobs defined in a YAML file. Workflows are used for continuous integration and continuous delivery (CI/CD) pipelines.
-
 Example:
 ```
 name: CI
