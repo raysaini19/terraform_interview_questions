@@ -272,6 +272,7 @@ Answer: Module versions can be managed using version constraints in the source a
 
 
 29. other option apart from depends_on in terraform
+
 In Terraform, depends_on is a useful way to explicitly specify dependencies between resources. However, there are other techniques and mechanisms you can use to manage dependencies and order of operations:
 ```
 1. Implicit Dependencies
