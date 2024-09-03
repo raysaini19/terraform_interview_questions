@@ -251,25 +251,30 @@ Answer: Terraform supports three types of variables:
     String: Represents a single value of text.
     List: Represents a collection of values in a particular order.
     Map: Represents a collection of key-value pairs.
-
+```
+```
 
 
 26. How can you manage multiple environments in Terraform?
 
 Answer: Multiple environments in Terraform can be managed using workspaces, different state files, or by organizing configuration files into separate directories for each environment. Additionally, tools like Terragrunt can be used to manage complex, multi-environment setups.
-
+```
+```
 
 
 27. What is terraform refresh and when would you use it?
 
 Answer: terraform refresh updates the state file with the actual state of the resources. It is useful when you suspect the state file is out of sync with the real infrastructure, and you need to reconcile the differences before making further changes.
-
+```
+```
 
 
 28. How do you manage module versions in Terraform?
+
 Answer: Module versions can be managed using version constraints in the source argument of a module block. This allows you to specify which versions of a module Terraform should use, ensuring consistency and stability
 
-
+```
+```
 
 29. other option apart from depends_on in terraform
 
